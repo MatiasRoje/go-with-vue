@@ -11,5 +11,5 @@ func returnErrorResponse(c *gin.Context, message string, status ...int) {
 	if len(status) > 0 {
 		statusCode = status[0]
 	}
-	c.IndentedJSON(statusCode, LoginResponse{Error: true, Message: message})
+	c.IndentedJSON(statusCode, StandardAPIResponse{Error: true, Message: message})
 }

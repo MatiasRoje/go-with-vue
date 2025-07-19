@@ -8,14 +8,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type StandardAPIResponse struct {
+	Error   bool   `json:"error"`
+	Message string `json:"message"`
+	Data    any    `json:"data,omitempty"`
+}
+
+type envelope map[string]any
+
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
-}
-
-type LoginResponse struct {
-	Error   bool   `json:"error"`
-	Message string `json:"message"`
 }
 
 func LoginHandler() gin.HandlerFunc {
@@ -28,22 +31,11 @@ func LoginHandler() gin.HandlerFunc {
 
 		// TODO: Add login logic
 
-		c.IndentedJSON(http.StatusOK, LoginResponse{Error: false, Message: "Login successful"})
+		c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "Login successful"})
 	}
 }
 
 // User handlers
-type getUserResponse struct {
-	Error   bool        `json:"error"`
-	Message string      `json:"message"`
-	User    models.User `json:"user"`
-}
-
-type getUsersResponse struct {
-	Error   bool          `json:"error"`
-	Message string        `json:"message"`
-	Users   []models.User `json:"users"`
-}
 
 func getUsersHandler(app *application) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -54,7 +46,7 @@ func getUsersHandler(app *application) gin.HandlerFunc {
 				returnErrorResponse(c, err.Error())
 				return
 			}
-			c.IndentedJSON(http.StatusOK, getUserResponse{Error: false, Message: "User retrieved successfully", User: user})
+			c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "User retrieved successfully", Data: envelope{"user": user}})
 			return
 		}
 
@@ -64,7 +56,7 @@ func getUsersHandler(app *application) gin.HandlerFunc {
 			return
 		}
 
-		c.IndentedJSON(http.StatusOK, getUsersResponse{Error: false, Message: "Users retrieved successfully", Users: users})
+		c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "Users retrieved successfully", Data: envelope{"users": users}})
 	}
 }
 
@@ -82,7 +74,7 @@ func getUserHandler(app *application) gin.HandlerFunc {
 		}
 
 		// NOTE: Maybe we shouldn't return the password?
-		c.IndentedJSON(http.StatusOK, getUserResponse{Error: false, Message: "User retrieved successfully", User: user})
+		c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "User retrieved successfully", Data: envelope{"user": user}})
 	}
 }
 
@@ -91,11 +83,6 @@ type createUserRequest struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Password  string `json:"password"`
-}
-
-type createUserResponse struct {
-	Error   bool   `json:"error"`
-	Message string `json:"message"`
 }
 
 func createUserHandler(app *application) gin.HandlerFunc {
@@ -117,6 +104,6 @@ func createUserHandler(app *application) gin.HandlerFunc {
 			return
 		}
 
-		c.IndentedJSON(http.StatusOK, createUserResponse{Error: false, Message: "User created successfully"})
+		c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "User created successfully"})
 	}
 }

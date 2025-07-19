@@ -1,11 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
-	"os"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 type config struct {
@@ -14,8 +14,7 @@ type config struct {
 
 type application struct {
 	config config	
-	infoLog *log.Logger
-	errorLog *log.Logger
+	router *gin.Engine
 }	
 
 func main() {
@@ -25,18 +24,22 @@ func main() {
 
 	app := &application{
 		config: cfg,
-		infoLog: log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime),
-		errorLog: log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile),
+		router: gin.Default(),
 	}
+	app.router.Use(cors.New(cors.Config{
+    AllowOrigins:     []string{"http://localhost:3000"},
+    AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+    AllowHeaders:     []string{"Accept", "Content-Type", "Authorization", "X-CSRF-Token"},
+    ExposeHeaders:    []string{"Link"},
+    AllowCredentials: true,
+    MaxAge: 300,
+  }))
 
-	err := app.serve()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func (app *application) serve() error {	
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// Api group
+	api := app.router.Group("/api/v1")
+	
+	// Register routes
+	app.router.GET("/", func(c *gin.Context) {
 		var payload struct {
 			Okay bool `json:"okay"`
 			Message string `json:"message"`
@@ -44,16 +47,10 @@ func (app *application) serve() error {
 		payload.Okay = true
 		payload.Message = "Hello, world"
 
-		out, error := json.MarshalIndent(payload, "", "\t")
-		if error != nil {
-			app.errorLog.Println(error)
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write(out)
+		c.JSON(http.StatusOK, payload)
 	})
 
-	app.infoLog.Println("API listening on port", app.config.port)
-	return http.ListenAndServe(fmt.Sprintf(":%d", app.config.port), nil)
+	api.POST("/login", LoginHandler)
+
+	app.router.Run(fmt.Sprintf(":%d", app.config.port))
 }

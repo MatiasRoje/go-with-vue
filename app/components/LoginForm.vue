@@ -14,8 +14,18 @@ const state = reactive<Partial<Schema>>({
   password: undefined
 })
 
-function onSubmit(event: FormSubmitEvent<Schema>) {
-  console.log(event.data)
+async function onSubmit(event: FormSubmitEvent<Schema>) {
+  const payload = {
+    email: event.data.email,
+    password: event.data.password
+  }
+
+  const response = await $fetch(`${useRuntimeConfig().public.API_URL}/login`, {
+    method: 'POST',
+    body: payload
+  })
+
+  console.log(response)
 }
 
 </script>

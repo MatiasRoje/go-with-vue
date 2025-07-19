@@ -8,4 +8,9 @@ export default defineNuxtConfig({
     preference: "light",
     fallback: "light",
   },
+  runtimeConfig: {
+    public: {
+      API_URL: process.env.API_URL,
+    },
+  },
 });

@@ -1,57 +1,39 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
+	"github.com/MatiasRoje/go-with-vue/backend/internal/config"
+	"github.com/MatiasRoje/go-with-vue/backend/internal/database"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
 )
 
-type config struct {
-	// Server
-	port int
-
-	// database
-	db_host     string
-	db_port     string
-	db_user     string
-	db_password string
-	db_name     string
-}
-
 type application struct {
-	config config
+	config config.Config
 	router *gin.Engine
-	db     *sql.DB
+	models *database.Models
 }
 
 func main() {
-	cfg := config{
-		port: 3001,
-
-		// database
-		db_host:     os.Getenv("DB_HOST"),
-		db_port:     os.Getenv("DB_PORT"),
-		db_user:     os.Getenv("DB_USER"),
-		db_password: os.Getenv("DB_PASSWORD"),
-		db_name:     os.Getenv("DB_NAME"),
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal("Error loading config:", err)
 	}
 
-	db, err := initDB(cfg)
+	db, err := database.InitDB(*cfg)
 	if err != nil {
 		log.Fatal("Error connecting to db:", err)
 	}
 	defer db.Close()
 
 	app := &application{
-		config: cfg,
+		config: *cfg,
 		router: gin.Default(),
-		db:     db,
+		models: database.NewDBModels(db),
 	}
 
 	app.router.Use(cors.New(cors.Config{
@@ -78,7 +60,10 @@ func main() {
 		c.IndentedJSON(http.StatusOK, payload)
 	})
 
-	api.POST("/login", LoginHandler)
+	api.POST("/login", LoginHandler())
+	api.GET("/users", getUsersHandler(app))
+	api.GET("/users/:id", getUserHandler(app))
+	api.POST("/users", createUserHandler(app))
 
-	app.router.Run(fmt.Sprintf(":%d", app.config.port))
+	app.router.Run(fmt.Sprintf(":%s", app.config.AppPort))
 }

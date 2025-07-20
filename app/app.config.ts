@@ -4,5 +4,8 @@ export default defineAppConfig({
       primary: "indigo",
       neutral: "zinc",
     },
+    skeleton: {
+      base: "animate-pulse rounded-md bg-elevated",
+    },
   },
 });

@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/MatiasRoje/go-with-vue/backend/internal/models"
 	"github.com/gin-gonic/gin"
@@ -19,6 +20,14 @@ type StandardAPIResponse struct {
 }
 
 type envelope map[string]any
+
+func returnErrorResponse(c *gin.Context, message string, status ...int) {
+	statusCode := http.StatusBadRequest
+	if len(status) > 0 {
+		statusCode = status[0]
+	}
+	c.IndentedJSON(statusCode, StandardAPIResponse{Error: true, Message: message})
+}
 
 type LoginRequest struct {
 	Email    string `json:"email"`
@@ -49,7 +58,34 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "Password is correct", Data: envelope{"token": tokenString}})
+	frontendUser := userToFrontendUser(user)
+
+	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "Login successful", Data: envelope{"token": tokenString, "user": frontendUser}})
+}
+
+func (h *Handler) validateTokenHandler(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		returnErrorResponse(c, "No token provided", http.StatusUnauthorized)
+		return
+	}
+	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+
+	claims, err := validateJWTToken(tokenString, h.app.config.JwtSecret)
+	if err != nil {
+		returnErrorResponse(c, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	user, err := h.app.models.Users.GetByEmail(claims.Email)
+	if err != nil {
+		returnErrorResponse(c, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	frontendUser := userToFrontendUser(user)
+
+	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "Token is valid", Data: envelope{"user": frontendUser}})
 }
 
 // User handlers
@@ -71,7 +107,12 @@ func (h *Handler) getUsersHandler(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "Users retrieved successfully", Data: envelope{"users": users}})
+	var frontendUsers []frontendUser
+	for _, user := range users {
+		frontendUsers = append(frontendUsers, userToFrontendUser(user))
+	}
+
+	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "Users retrieved successfully", Data: envelope{"users": frontendUsers}})
 }
 
 func (h *Handler) getUserHandler(c *gin.Context) {
@@ -86,8 +127,9 @@ func (h *Handler) getUserHandler(c *gin.Context) {
 		return
 	}
 
-	// TODO: Maybe we shouldn't return the password?
-	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "User retrieved successfully", Data: envelope{"user": user}})
+	frontendUser := userToFrontendUser(user)
+
+	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "User retrieved successfully", Data: envelope{"user": frontendUser}})
 }
 
 type createUserRequest struct {

@@ -50,6 +50,7 @@ func main() {
 
 	// Register routes
 	api.POST("/login", h.LoginHandler)
+	api.POST("/validate-token", h.validateTokenHandler)
 	api.GET("/users", h.getUsersHandler)
 	api.GET("/users/:id", h.getUserHandler)
 	api.POST("/users", h.createUserHandler)

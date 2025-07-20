@@ -59,25 +59,3 @@ func insertTestUser(db *sql.DB) error {
 	log.Println("Test user successfully inserted")
 	return nil
 }
-
-func createTokensTable(db *sql.DB) error {
-	query := `
-		CREATE TABLE IF NOT EXISTS tokens (
-			id SERIAL PRIMARY KEY,
-			user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-			user_email VARCHAR(255) UNIQUE NOT NULL,
-			token VARCHAR(255) NOT NULL,
-			token_hash BYTEA NOT NULL,
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			expires_at TIMESTAMP NOT NULL
-		)
-	`
-
-	if _, err := db.Exec(query); err != nil {
-		return fmt.Errorf("error creating tokens table: %w", err)
-	}
-
-	log.Println("Tokens table successfully initialized")
-	return nil
-}

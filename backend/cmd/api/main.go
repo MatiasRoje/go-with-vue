@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/MatiasRoje/go-with-vue/backend/internal/config"
 	"github.com/MatiasRoje/go-with-vue/backend/internal/database"
@@ -45,25 +44,15 @@ func main() {
 		MaxAge:           300,
 	}))
 
-	// Api group
+	// Initialize handler and routes
+	h := &Handler{app: app}
 	api := app.router.Group("/api/v1")
 
 	// Register routes
-	app.router.GET("/", func(c *gin.Context) {
-		var payload struct {
-			Okay    bool   `json:"okay"`
-			Message string `json:"message"`
-		}
-		payload.Okay = true
-		payload.Message = "Hello, world"
-
-		c.IndentedJSON(http.StatusOK, payload)
-	})
-
-	api.POST("/login", LoginHandler())
-	api.GET("/users", getUsersHandler(app))
-	api.GET("/users/:id", getUserHandler(app))
-	api.POST("/users", createUserHandler(app))
+	api.POST("/login", h.LoginHandler)
+	api.GET("/users", h.getUsersHandler)
+	api.GET("/users/:id", h.getUserHandler)
+	api.POST("/users", h.createUserHandler)
 
 	app.router.Run(fmt.Sprintf(":%s", app.config.AppPort))
 }

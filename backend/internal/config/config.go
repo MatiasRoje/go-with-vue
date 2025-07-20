@@ -17,6 +17,9 @@ type Config struct {
 	DbUser     string
 	DbPassword string
 	DbName     string
+
+	// JWT
+	JwtSecret string
 }
 
 func LoadConfig() (*Config, error) {
@@ -28,6 +31,7 @@ func LoadConfig() (*Config, error) {
 	c.DbUser = os.Getenv("DB_USER")
 	c.DbPassword = os.Getenv("DB_PASSWORD")
 	c.DbName = os.Getenv("DB_NAME")
+	c.JwtSecret = os.Getenv("JWT_SECRET")
 
 	if err := validateConfig(); err != nil {
 		return nil, fmt.Errorf("error validating config: %s", err)
@@ -45,6 +49,7 @@ func validateConfig() error {
 		"DB_USER",
 		"DB_PASSWORD",
 		"DB_NAME",
+		"JWT_SECRET",
 	}
 	var errors []string
 	for _, varName := range requiredVars {

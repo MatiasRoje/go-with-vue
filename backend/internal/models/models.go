@@ -1,7 +1,12 @@
 package models
 
-import "time"
+import (
+	"time"
 
+	"golang.org/x/crypto/bcrypt"
+)
+
+// User model
 type User struct {
 	ID        int       `json:"id"`
 	Email     string    `json:"email"`
@@ -12,13 +17,6 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type Token struct {
-	ID        int       `json:"id"`
-	UserID    int       `json:"user_id"`
-	UserEmail string    `json:"user_email"`
-	Token     string    `json:"token"`
-	TokenHash []byte    `json:"token_hash"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	ExpiresAt time.Time `json:"expires_at"`
+func (u *User) CheckPassword(password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 }

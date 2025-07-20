@@ -3,13 +3,11 @@ package database
 import "database/sql"
 
 type Models struct {
-	Users  UsersModel
-	Tokens TokensModel
+	Users UsersModel
 }
 
 func NewDBModels(db *sql.DB) *Models {
 	return &Models{
-		Users:  UsersModel{DB: db},
-		Tokens: TokensModel{DB: db},
+		Users: UsersModel{DB: db},
 	}
 }

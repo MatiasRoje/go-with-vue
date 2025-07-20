@@ -43,10 +43,6 @@ func InitDB(cfg config.Config) (*sql.DB, error) {
 		return nil, fmt.Errorf("error creating users table: %w", err)
 	}
 
-	if err := createTokensTable(db); err != nil {
-		return nil, fmt.Errorf("error creating tokens table: %w", err)
-	}
-
 	if err := insertTestUser(db); err != nil {
 		return nil, fmt.Errorf("error inserting test user: %w", err)
 	}

@@ -56,5 +56,8 @@ func main() {
 	api.POST("/users", h.createUserHandler)
 	api.GET("/books", h.getBooksHandler)
 
+	// Static files
+	app.router.Static("/static", "./static")
+
 	app.router.Run(fmt.Sprintf(":%s", app.config.AppPort))
 }

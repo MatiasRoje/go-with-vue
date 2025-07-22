@@ -19,6 +19,11 @@ const mainItems: NavigationMenuItem[] = [
     icon: 'i-lucide-home',
     to: '/',
   },
+  {
+    label: 'Books',
+    icon: 'i-lucide-book-open-text',
+    to: '/books',
+  },
 ]
 
 // User/auth group (client-only)

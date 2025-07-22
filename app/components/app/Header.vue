@@ -4,8 +4,6 @@ import { useAuth } from '~/composables/useAuth'
 import { useCookie } from '#app'
 
 const { isAuthenticated, user, loading } = useAuth()
-console.log("Header.vue loading ref:", loading)
-console.log("Header.vue loading value:", loading.value)
 
 const handleLogout = () => {
   useAuth().user.value = null
@@ -14,14 +12,13 @@ const handleLogout = () => {
   useCookie("token", {secure: true}).value = null
 }
 
-// Main navigation group (SSR-friendly)
+// Main navigation group (SSR)
 const mainItems: NavigationMenuItem[] = [
   {
     label: 'Home',
     icon: 'i-lucide-home',
     to: '/',
   },
-  // Add more main items here
 ]
 
 // User/auth group (client-only)
@@ -30,7 +27,6 @@ const userItems = computed<NavigationMenuItem[]>(() =>
     ? [
         {
           label: user.value?.email ?? "",
-          icon: "i-lucide-user",
           class: "pointer-events-none",
         },
         {
@@ -51,8 +47,7 @@ const userItems = computed<NavigationMenuItem[]>(() =>
 </script>
 
 <template>
-  <div class="flex items-center w-full border-b border-default p-2 justify-between">
-    <!-- Main nav: always SSR -->
+  <div class="flex items-center w-full border-b border-default p-4 justify-between">
     <UNavigationMenu
       :items="[mainItems]"
       highlight
@@ -61,9 +56,7 @@ const userItems = computed<NavigationMenuItem[]>(() =>
       class="flex-1"
     />
 
-    <!-- User nav: client-only, with loading skeleton -->
     <ClientOnly>
-      <!-- This content is rendered only on the client -->
       <div class="min-w-[120px] flex items-center">
         <div v-if="loading" class="flex items-center gap-2 mr-4">
           <USkeleton class="h-6 w-6 rounded-full" />

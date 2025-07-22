@@ -13,6 +13,7 @@ const (
 	DB_MAX_OPEN_CONNS = 5
 	DB_MAX_IDLE_CONNS = 5
 	DB_MAX_LIFETIME   = 5 * time.Minute
+	DB_TIMEOUT        = 3 * time.Second
 )
 
 func connectToDB(cfg config.Config) (*sql.DB, error) {

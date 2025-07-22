@@ -23,7 +23,6 @@ export default defineNuxtPlugin(() => {
           auth.user.value = response.data.user;
           auth.token.value = token.value;
           userCookie.value = JSON.stringify(response.data.user)
-          await new Promise((resolve) => setTimeout(resolve, 1000));
         } else {
           // Invalid token, clear everything
           auth.user.value = null;

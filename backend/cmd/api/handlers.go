@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -41,7 +42,7 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := h.app.models.Users.GetByEmail(req.Email)
+	user, err := h.app.models.DBUsers.GetByEmail(req.Email)
 	if err != nil {
 		returnErrorResponse(c, "Invalid credentials")
 		return
@@ -58,7 +59,7 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		return
 	}
 
-	frontendUser := userToFrontendUser(user)
+	frontendUser := userToFrontendUser(*user)
 
 	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "Login successful", Data: envelope{"token": tokenString, "user": frontendUser}})
 }
@@ -77,13 +78,13 @@ func (h *Handler) validateTokenHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := h.app.models.Users.GetByEmail(claims.Email)
+	user, err := h.app.models.DBUsers.GetByEmail(claims.Email)
 	if err != nil {
 		returnErrorResponse(c, "Invalid token", http.StatusUnauthorized)
 		return
 	}
 
-	frontendUser := userToFrontendUser(user)
+	frontendUser := userToFrontendUser(*user)
 
 	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "Token is valid", Data: envelope{"user": frontendUser}})
 }
@@ -92,7 +93,7 @@ func (h *Handler) validateTokenHandler(c *gin.Context) {
 func (h *Handler) getUsersHandler(c *gin.Context) {
 	email := c.Query("email")
 	if email != "" {
-		user, err := h.app.models.Users.GetByEmail(email)
+		user, err := h.app.models.DBUsers.GetByEmail(email)
 		if err != nil {
 			returnErrorResponse(c, err.Error())
 			return
@@ -101,7 +102,7 @@ func (h *Handler) getUsersHandler(c *gin.Context) {
 		return
 	}
 
-	users, err := h.app.models.Users.GetAll()
+	users, err := h.app.models.DBUsers.GetAll()
 	if err != nil {
 		returnErrorResponse(c, err.Error())
 		return
@@ -109,7 +110,7 @@ func (h *Handler) getUsersHandler(c *gin.Context) {
 
 	var frontendUsers []frontendUser
 	for _, user := range users {
-		frontendUsers = append(frontendUsers, userToFrontendUser(user))
+		frontendUsers = append(frontendUsers, userToFrontendUser(*user))
 	}
 
 	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "Users retrieved successfully", Data: envelope{"users": frontendUsers}})
@@ -121,13 +122,13 @@ func (h *Handler) getUserHandler(c *gin.Context) {
 		returnErrorResponse(c, err.Error())
 		return
 	}
-	user, err := h.app.models.Users.GetByID(id)
+	user, err := h.app.models.DBUsers.GetByID(id)
 	if err != nil {
 		returnErrorResponse(c, err.Error())
 		return
 	}
 
-	frontendUser := userToFrontendUser(user)
+	frontendUser := userToFrontendUser(*user)
 
 	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "User retrieved successfully", Data: envelope{"user": frontendUser}})
 }
@@ -146,7 +147,7 @@ func (h *Handler) createUserHandler(c *gin.Context) {
 		return
 	}
 
-	err := h.app.models.Users.Insert(models.User{
+	err := h.app.models.DBUsers.Insert(&models.User{
 		Email:     req.Email,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
@@ -158,4 +159,20 @@ func (h *Handler) createUserHandler(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "User created successfully"})
+}
+
+// Books handlers
+// NOTE: For now we are not using a frontendBook struct, as books don't hold the same type of private fields as users, but we might do it later
+func (h *Handler) getBooksHandler(c *gin.Context) {
+	books, err := h.app.models.DBBooks.GetAll()
+	if err != nil {
+		returnErrorResponse(c, err.Error())
+		return
+	}
+
+	sort.Slice(books, func(i, j int) bool {
+		return books[i].ID < books[j].ID
+	})
+
+	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "Books retrieved successfully", Data: envelope{"books": books}})
 }

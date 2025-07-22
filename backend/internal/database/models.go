@@ -3,11 +3,21 @@ package database
 import "database/sql"
 
 type Models struct {
-	Users UsersModel
+	DBUsers DBUsers
+	DBBooks DBBooks
+}
+
+type DBUsers struct {
+	DB *sql.DB
+}
+
+type DBBooks struct {
+	DB *sql.DB
 }
 
 func NewDBModels(db *sql.DB) *Models {
 	return &Models{
-		Users: UsersModel{DB: db},
+		DBUsers: DBUsers{DB: db},
+		DBBooks: DBBooks{DB: db},
 	}
 }

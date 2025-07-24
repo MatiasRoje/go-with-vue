@@ -13,4 +13,7 @@ export default defineNuxtConfig({
       API_URL: process.env.API_URL,
     },
   },
+  image: {
+    domains: ["localhost:3001"],
+  },
 });

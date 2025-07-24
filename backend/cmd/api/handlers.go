@@ -176,3 +176,17 @@ func (h *Handler) getBooksHandler(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "Books retrieved successfully", Data: envelope{"books": books}})
 }
+
+func (h *Handler) getBookHandler(c *gin.Context) {
+	slug := c.Param("slug")
+	if slug == "" {
+		returnErrorResponse(c, "No slug provided")
+		return
+	}
+	book, err := h.app.models.DBBooks.GetBySlug(slug)
+	if err != nil {
+		returnErrorResponse(c, err.Error())
+		return
+	}
+	c.IndentedJSON(http.StatusOK, StandardAPIResponse{Error: false, Message: "Book retrieved successfully", Data: envelope{"book": book}})
+}

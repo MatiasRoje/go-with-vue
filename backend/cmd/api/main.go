@@ -55,6 +55,7 @@ func main() {
 	api.GET("/users/:id", h.getUserHandler)
 	api.POST("/users", h.createUserHandler)
 	api.GET("/books", h.getBooksHandler)
+	api.GET("/books/:slug", h.getBookHandler)
 
 	// Static files
 	app.router.Static("/static", "./static")

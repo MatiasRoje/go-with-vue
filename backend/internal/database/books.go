@@ -178,9 +178,8 @@ func (b *DBBooks) genresForBook(id int) ([]*models.Genre, error) {
 	}
 	defer gRows.Close()
 
-	var genre models.Genre
 	for gRows.Next() {
-
+		var genre models.Genre
 		err = gRows.Scan(
 			&genre.ID,
 			&genre.GenreName,

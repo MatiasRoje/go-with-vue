@@ -1,12 +1,30 @@
 <script setup lang="ts">
 const { getBooks } = useBooks()
 
-const { data } = await getBooks()
+const { error, data, loading } = await getBooks()
+
 </script>
 
 <template>
   <main class="flex flex-col gap-4 items-center my-10">
-    <ul class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <!-- Loading State -->
+    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <UCard
+        v-for="n in 6"
+        :key="n"
+        class="border border-gray-200 overflow-hidden flex flex-col w-56"
+      >
+        <USkeleton class="w-full h-48 mb-4" />
+        <USkeleton class="h-6 w-3/4 mb-2" />
+        <USkeleton class="h-4 w-1/2 mb-2" />
+      </UCard>
+    </div>
+
+    <!-- Error State -->
+    <p v-else-if="error">Something went wrong. Please try again later.</p>
+
+    <!-- Data State -->
+    <ul v-else-if="data" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
       <li v-for="book in data" :key="book.id">
         <ULink :href="`/books/${book.slug}`">
           <UCard

@@ -17,13 +17,13 @@ export const useBooks = () => {
     const {data, pending, error, refresh} = await useFetch<BackendResponse<{book: Book}>>(`/books/${slug}`, {
       baseURL: useRuntimeConfig().public.API_URL,
     })
-      return {
-        data: data.value?.data?.book,
-        error,
-        loading: pending.value,
-        refresh
-      }
+    return {
+      data: data.value?.data?.book,
+      error,
+      loading: pending.value,
+      refresh
     }
+  }
 
   return {
     getBooks,

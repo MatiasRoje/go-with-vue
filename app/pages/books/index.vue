@@ -1,13 +1,77 @@
 <script setup lang="ts">
+const router = useRouter()
+const route = useRoute()
 const { getBooks } = useBooks()
-
 const { error, data, loading } = await getBooks()
+
+// Get unique genres from data, flattening all genres arrays
+const genres = computed(() => {
+  if (!data) return []
+  const allGenres = data.flatMap(book => book.genres || [])
+  // Remove duplicates by id
+  const unique = []
+  const seen = new Set()
+  for (const genre of allGenres) {
+    if (!seen.has(genre.id)) {
+      seen.add(genre.id)
+      unique.push(genre)
+    }
+  }
+  
+  return unique
+})
+
+const selectedGenre = ref<{label: string, value: number} | undefined>(undefined)
+
+// On load, set from query param if available
+watchEffect(() => {
+  if (!genres.value.length) return
+  const genreId = Number(route.query.genre)
+  if (genreId) {
+    const found = genres.value.find(g => g.id === genreId)
+    if (found) selectedGenre.value = { label: found.genre_name, value: found.id }
+    else selectedGenre.value = undefined
+  } else {
+    selectedGenre.value = undefined
+  }
+})
+
+// Filter books by selected genre
+const filteredBooks = computed(() => {
+  if (!selectedGenre.value) return data
+  return data?.filter(book =>
+    (book.genres || []).some(g => g.id === Number(selectedGenre.value?.value))
+  )
+})
+
+watch(selectedGenre, (val) => {
+  if (val?.value) {
+    router.replace({ query: { ...route.query, genre: val.value } })
+  } else {
+    const { genre, ...rest } = route.query
+    router.replace({ query: rest })
+  }
+})
 
 </script>
 
 <template>
   <main class="flex flex-col gap-4 items-center my-10">
-      <!-- Loading State -->
+    <!-- Genre Filter -->
+    <div class="mb-6">
+      <UInputMenu
+        v-model="selectedGenre"
+        :items="genres.map((genre) => ({ label: genre.genre_name, value: genre.id }))"
+        placeholder="Filter by genre"
+        clearable
+        :ui="{
+          trailingIcon: 'hover:cursor-pointer',
+          item: 'hover:cursor-pointer',
+        }"
+      />
+    </div>
+
+    <!-- Loading State -->
     <div v-if="loading" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
       <UCard
         v-for="n in 6"
@@ -24,8 +88,8 @@ const { error, data, loading } = await getBooks()
     <p v-else-if="error">Something went wrong. Please try again later.</p>
 
     <!-- Data State -->
-    <ul v-else-if="data" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-      <li v-for="book in data" :key="book.id">
+    <ul v-else-if="filteredBooks" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <li v-for="book in filteredBooks" :key="book.id">
         <ULink :href="`/books/${book.slug}`">
           <UCard
             class="border border-gray-200 overflow-hidden flex flex-col hover:cursor-pointer"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const router = useRouter()
 const route = useRoute()
 const slugParam = route.params.slug
 const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam
@@ -60,7 +61,7 @@ const { loading, error, data } = await getBook(slug as string);
       </div>
     </div>
 
-    <UButton to="/books" class="hover:cursor-pointer">
+    <UButton class="hover:cursor-pointer" @click="router.back()">
       ← Back to Books
     </UButton>
   </main>

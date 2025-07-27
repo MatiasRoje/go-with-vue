@@ -5,12 +5,12 @@ const { data } = await getBooks()
 </script>
 
 <template>
-  <main class="flex flex-col gap-4 items-center my-4">
-    <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <main class="flex flex-col gap-4 items-center my-10">
+    <ul class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
       <li v-for="book in data" :key="book.id">
         <ULink :href="`/books/${book.slug}`">
           <UCard
-            class="border border-gray-200 overflow-hidden flex flex-col h-full hover:cursor-pointer"
+            class="border border-gray-200 overflow-hidden flex flex-col hover:cursor-pointer"
             :ui="{
               header: 'p-0 sm:px-0',
               body: 'p-3'
@@ -19,7 +19,7 @@ const { data } = await getBooks()
             <template #header>
               <nuxt-img
                 :src="`http://localhost:3001/static/covers/${book.slug}.jpg`"
-                class="w-full min-h-64 object-cover"
+                class="w-full h-72 object-cover"
               />
             </template>
             <div class="flex flex-col flex-1">
@@ -30,7 +30,7 @@ const { data } = await getBooks()
                 <span
                   v-for="genre in book.genres"
                   :key="genre.id"
-                  class="bg-indigo-100 text-indigo-800 rounded-full px-2 py-0.5 text-xs text-center font-semibold mt-2"
+                  class="bg-indigo-100 text-indigo-800 rounded-full px-2 py-1 text-xs text-center font-semibold mt-2"
                 >
                   {{ genre.genre_name }}
                 </span>
